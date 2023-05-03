@@ -10,7 +10,6 @@ namespace PigAndBaconTannery.Repositories
     {
         public CategoryRepository(IConfiguration configuration) : base(configuration)
         {
-
         }
 
         public List<Category> GetAll()
