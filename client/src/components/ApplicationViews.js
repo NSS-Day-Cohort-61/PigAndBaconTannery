@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import ProductList from "./ProductList";
 import Login from "./Login";
 import Register from "./Register";
+import ProductForm from "./ProductForm";
 
 export default function ApplicationViews({ isLoggedIn }) {
   return (
@@ -12,6 +13,7 @@ export default function ApplicationViews({ isLoggedIn }) {
           index
           element={isLoggedIn ? <ProductList /> : <Navigate to="/login" />}
         />
+        <Route path="add" element={isLoggedIn ? <ProductForm /> : <Navigate to="/login" />} />
         <Route path="login" element={<Login/>}/>
         <Route path="register" element={<Register/>}/>
         <Route path="*" element={<p>Whoops, nothing here...</p>} />

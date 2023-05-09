@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using PigAndBaconTannery.Models;
 using PigAndBaconTannery.Repositories;
 
 namespace PigAndBaconTannery.Controllers
@@ -20,6 +21,12 @@ namespace PigAndBaconTannery.Controllers
         public IActionResult GetAll()
         {
             return Ok(_productRepository.GetAll());
+        }
+
+        [HttpPost]
+        public void Add(Product product)
+        {
+            _productRepository.Add(product);
         }
     }
 }
