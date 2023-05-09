@@ -7,7 +7,10 @@ export default function ProductList() {
   const [products, setProduct] = useState([]);
 
   useEffect(() => {
-    getAllProducts().then((products) => setProduct(products));
+    getAllProducts().then((products) => {
+      setProduct(products);
+      console.log(products);
+    });
   }, []);
 
   return (
