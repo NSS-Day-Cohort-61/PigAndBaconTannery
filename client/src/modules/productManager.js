@@ -20,12 +20,21 @@ export const getAllProducts = () => {
 }
 )};
 
-// export const addProduct = (product) => {
-//   return fetch(baseUrl, {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//     },
-//     body: JSON.stringify(product),
-//   });
-// };
+export const addProduct = (product) => {
+return getToken().then((token) => {
+  return fetch(baseUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(product),
+  })
+  .then((resp) => {
+    if (resp.ok) {
+        return resp.json();
+    } else {
+        throw new Error("An unknown error occurred while trying to get products.");
+    }
+});
+})};

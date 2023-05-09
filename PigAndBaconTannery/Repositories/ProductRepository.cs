@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using PigAndBaconTannery.Models;
+using PigAndBaconTannery.Utils;
 
 namespace PigAndBaconTannery.Repositories
 {
@@ -41,7 +43,7 @@ namespace PigAndBaconTannery.Repositories
                                 Id = productId,
                                 Name = reader.GetString(reader.GetOrdinal("ProductName")),
                                 Price = reader.GetDecimal(reader.GetOrdinal("Price")),
-                                Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
+                                Quantity = DbUtils.GetNullableInt(reader,"Quantity"),
                                 VendorId = reader.GetInt32(reader.GetOrdinal("VendorId")),
                                 Vendor = new Vendor()
                                 {
@@ -52,7 +54,7 @@ namespace PigAndBaconTannery.Repositories
                                 {
                                     Id = reader.GetInt32(reader.GetOrdinal("ProductDetailId")),
                                     Description = reader.GetString(reader.GetOrdinal("Description")),
-                                    Weight = reader.GetInt32(reader.GetOrdinal("Weight"))
+                                    Weight = DbUtils.GetNullableInt(reader, "Weight")
                                 },
                                 CategoryIds = new List<int>()
                             };
@@ -70,6 +72,53 @@ namespace PigAndBaconTannery.Repositories
             }
         }
 
+        public void Add(Product product)
+        {
+            using (var conn = Connection)
+            {
+                conn.Open();
+                using (var cmd = conn.CreateCommand())
+                {
+                    //Insert Product
+                    cmd.CommandText = @"INSERT INTO Product (
+                                            Name,
+                                            Price,
+                                            VendorId,
+                                            Quantity)
+                                        OUTPUT INSERTED.ID
+                                        VALUES (@Name, @Price, @VendorId,@Quantity)";
+                    cmd.Parameters.AddWithValue("@Name", product.Name);
+                    cmd.Parameters.AddWithValue("@Price", product.Price);
+                    cmd.Parameters.AddWithValue("@VendorId", product.VendorId);
+                    cmd.Parameters.AddWithValue("@Quantity", product.Quantity);
 
+                    product.Id = (int)cmd.ExecuteScalar();
+
+                    //Insert Product Details
+                    cmd.CommandText = @"INSERT INTO ProductDetail (ProductId, Description, Weight)
+                                        OUTPUT INSERTED.ID
+                                        VALUES (@ProductId, @Description, @Weight)";
+                    cmd.Parameters.Clear();
+                    cmd.Parameters.AddWithValue("@ProductId", product.Id);
+                    cmd.Parameters.AddWithValue("@Description", product.ProductDetail.Description);
+                    cmd.Parameters.AddWithValue("@Weight", product.ProductDetail.Weight);
+
+                    cmd.ExecuteNonQuery();
+
+                    //Insert Product Category
+                    foreach (var c in product.CategoryIds)
+                    {
+                        cmd.CommandText = @"
+                            INSERT INTO ProductCategory (ProductId, CategoryId)
+                            VALUES(@ProductId, @CategoryId)";
+                        cmd.Parameters.Clear();
+                        cmd.Parameters.AddWithValue("@ProductId", product.Id);
+                        cmd.Parameters.AddWithValue("@CategoryId", c);
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+        }
     }
 }

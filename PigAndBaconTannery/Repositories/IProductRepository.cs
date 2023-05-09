@@ -6,5 +6,7 @@ namespace PigAndBaconTannery.Repositories
     public interface IProductRepository
     {
         List<Product> GetAll();
+
+        void Add(Product product);
     }
 }
